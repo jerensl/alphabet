@@ -1,4 +1,6 @@
 {
   "version": 2,
-  "projects": {}
+  "projects": {
+    "customer-api": "apps/customer-api"
+  }
 }
