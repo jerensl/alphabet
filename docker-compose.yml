@@ -1,0 +1,12 @@
+version: '3.9'
+services:
+  sentiment-model:
+    image: tensorflow/serving:latest
+    ports:
+      - '8501:8501'
+    environment:
+      - MODEL_NAME=sentiment-analysis
+    volumes:
+      - type: bind
+        source: ${PWD}/apps/sentiment-model/
+        target: /models/sentiment-analysis
