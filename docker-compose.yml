@@ -9,6 +9,8 @@ services:
     env_file:
       - apps/customer-api/.env
     pull_policy: always
+    depends_on:
+      - 'sentiment-model'
   sentiment-model:
     image: tensorflow/serving:latest
     ports:

@@ -1,13 +1,19 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Post, Res } from '@nestjs/common';
 
 import { AppService } from './app.service';
+import { Messaging } from './domain/Message';
 
-@Controller()
+@Controller('message')
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
+  @Post()
+  message(@Body() message: Messaging) {
+    return this.appService.pushNewMessage(message);
+  }
+
   @Get()
-  getData() {
-    return this.appService.getData();
+  getMessage() {
+    return this.appService.getAllMessage();
   }
 }
