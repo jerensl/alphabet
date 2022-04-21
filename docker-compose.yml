@@ -1,9 +1,18 @@
 version: '3.9'
 services:
+  customer-api:
+    build:
+      context: ./
+      dockerfile: apps/customer-api/Dockerfile
+    ports:
+      - '127.0.0.1:5000:5000'
+    env_file:
+      - apps/customer-api/.env
+    pull_policy: always
   sentiment-model:
     image: tensorflow/serving:latest
     ports:
-      - '8501:8501'
+      - '127.0.0.1:8501:8501'
     environment:
       - MODEL_NAME=sentiment-analysis
     volumes:
