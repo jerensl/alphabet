@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { BertWordPieceTokenizer } from 'tokenizers';
-import { Messaging } from './domain/Message';
+import { Messaging } from '../domain/Message';
 import { promisify } from 'util';
 import { lastValueFrom, map } from 'rxjs';
 
@@ -66,7 +66,7 @@ export class AppService {
     }
 
     this.messaging.push({
-      message: category,
+      message: message,
       prediction: responseData.predictions,
       category: category,
     });

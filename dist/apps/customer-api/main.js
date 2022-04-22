@@ -2,80 +2,7 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "./apps/customer-api/src/app/app.controller.ts":
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-var _a, _b;
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.AppController = void 0;
-const tslib_1 = __webpack_require__("tslib");
-const common_1 = __webpack_require__("@nestjs/common");
-const app_service_1 = __webpack_require__("./apps/customer-api/src/app/app.service.ts");
-const Message_1 = __webpack_require__("./apps/customer-api/src/app/domain/Message.ts");
-let AppController = class AppController {
-    constructor(appService) {
-        this.appService = appService;
-    }
-    message(message) {
-        return this.appService.pushNewMessage(message.message);
-    }
-    getMessage() {
-        return this.appService.getAllMessage();
-    }
-};
-tslib_1.__decorate([
-    (0, common_1.Post)(),
-    tslib_1.__param(0, (0, common_1.Body)()),
-    tslib_1.__metadata("design:type", Function),
-    tslib_1.__metadata("design:paramtypes", [typeof (_a = typeof Message_1.MessageDTO !== "undefined" && Message_1.MessageDTO) === "function" ? _a : Object]),
-    tslib_1.__metadata("design:returntype", void 0)
-], AppController.prototype, "message", null);
-tslib_1.__decorate([
-    (0, common_1.Get)(),
-    tslib_1.__metadata("design:type", Function),
-    tslib_1.__metadata("design:paramtypes", []),
-    tslib_1.__metadata("design:returntype", void 0)
-], AppController.prototype, "getMessage", null);
-AppController = tslib_1.__decorate([
-    (0, common_1.Controller)('message'),
-    tslib_1.__metadata("design:paramtypes", [typeof (_b = typeof app_service_1.AppService !== "undefined" && app_service_1.AppService) === "function" ? _b : Object])
-], AppController);
-exports.AppController = AppController;
-
-
-/***/ }),
-
-/***/ "./apps/customer-api/src/app/app.module.ts":
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.AppModule = void 0;
-const tslib_1 = __webpack_require__("tslib");
-const axios_1 = __webpack_require__("@nestjs/axios");
-const common_1 = __webpack_require__("@nestjs/common");
-const app_controller_1 = __webpack_require__("./apps/customer-api/src/app/app.controller.ts");
-const app_service_1 = __webpack_require__("./apps/customer-api/src/app/app.service.ts");
-let AppModule = class AppModule {
-};
-AppModule = tslib_1.__decorate([
-    (0, common_1.Module)({
-        imports: [
-            axios_1.HttpModule.register({
-                timeout: 10000,
-            }),
-        ],
-        controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService],
-    })
-], AppModule);
-exports.AppModule = AppModule;
-
-
-/***/ }),
-
-/***/ "./apps/customer-api/src/app/app.service.ts":
+/***/ "./apps/customer-api/src/app/adapters/app.service.ts":
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -118,11 +45,9 @@ let AppService = class AppService {
                 attention_mask.push(0);
                 input_ids.push(0);
             }
-            this.logger.log('Json Data :', JSON.stringify(data));
             const responseData = yield (0, rxjs_1.lastValueFrom)(this.httpService
                 .post(`http://${process.env.SENTIMENT_MODEL_URL}`, JSON.stringify(data))
                 .pipe((0, rxjs_1.map)((response) => {
-                this.logger.log('Response status from tensorflow serving :', response.data);
                 return response.data;
             })));
             let category = '';
@@ -138,7 +63,7 @@ let AppService = class AppService {
                 category = 'normal';
             }
             this.messaging.push({
-                message: category,
+                message: message,
                 prediction: responseData.predictions,
                 category: category,
             });
@@ -150,6 +75,35 @@ AppService = tslib_1.__decorate([
     tslib_1.__metadata("design:paramtypes", [typeof (_a = typeof axios_1.HttpService !== "undefined" && axios_1.HttpService) === "function" ? _a : Object])
 ], AppService);
 exports.AppService = AppService;
+
+
+/***/ }),
+
+/***/ "./apps/customer-api/src/app/app.module.ts":
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.AppModule = void 0;
+const tslib_1 = __webpack_require__("tslib");
+const axios_1 = __webpack_require__("@nestjs/axios");
+const common_1 = __webpack_require__("@nestjs/common");
+const app_controller_1 = __webpack_require__("./apps/customer-api/src/app/ports/app.controller.ts");
+const app_service_1 = __webpack_require__("./apps/customer-api/src/app/adapters/app.service.ts");
+let AppModule = class AppModule {
+};
+AppModule = tslib_1.__decorate([
+    (0, common_1.Module)({
+        imports: [
+            axios_1.HttpModule.register({
+                timeout: 10000,
+            }),
+        ],
+        controllers: [app_controller_1.AppController],
+        providers: [app_service_1.AppService],
+    })
+], AppModule);
+exports.AppModule = AppModule;
 
 
 /***/ }),
@@ -169,6 +123,50 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:type", String)
 ], MessageDTO.prototype, "message", void 0);
 exports.MessageDTO = MessageDTO;
+
+
+/***/ }),
+
+/***/ "./apps/customer-api/src/app/ports/app.controller.ts":
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+var _a, _b;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.AppController = void 0;
+const tslib_1 = __webpack_require__("tslib");
+const common_1 = __webpack_require__("@nestjs/common");
+const app_service_1 = __webpack_require__("./apps/customer-api/src/app/adapters/app.service.ts");
+const Message_1 = __webpack_require__("./apps/customer-api/src/app/domain/Message.ts");
+let AppController = class AppController {
+    constructor(appService) {
+        this.appService = appService;
+    }
+    message(message) {
+        return this.appService.pushNewMessage(message.message);
+    }
+    getMessage() {
+        return this.appService.getAllMessage();
+    }
+};
+tslib_1.__decorate([
+    (0, common_1.Post)(),
+    tslib_1.__param(0, (0, common_1.Body)()),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [typeof (_a = typeof Message_1.MessageDTO !== "undefined" && Message_1.MessageDTO) === "function" ? _a : Object]),
+    tslib_1.__metadata("design:returntype", void 0)
+], AppController.prototype, "message", null);
+tslib_1.__decorate([
+    (0, common_1.Get)(),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", []),
+    tslib_1.__metadata("design:returntype", void 0)
+], AppController.prototype, "getMessage", null);
+AppController = tslib_1.__decorate([
+    (0, common_1.Controller)('message'),
+    tslib_1.__metadata("design:paramtypes", [typeof (_b = typeof app_service_1.AppService !== "undefined" && app_service_1.AppService) === "function" ? _b : Object])
+], AppController);
+exports.AppController = AppController;
 
 
 /***/ }),

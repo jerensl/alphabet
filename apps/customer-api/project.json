@@ -46,6 +46,62 @@
         "jestConfig": "apps/customer-api/jest.config.js",
         "passWithNoTests": true
       }
+    },
+    "prisma-generate": {
+      "executor": "@nrwl/workspace:run-commands",
+      "outputs": [],
+      "options": {
+        "command": "../../node_modules/.bin/prisma generate",
+        "cwd": "apps/customer-api"
+      }
+    },
+    "migrate-save": {
+      "executor": "@nrwl/workspace:run-commands",
+      "outputs": [],
+      "options": {
+        "command": "../../node_modules/.bin/prisma migrate dev --create-only --preview-feature --schema ./prisma/schema.prisma",
+        "cwd": "apps/customer-api"
+      }
+    },
+    "migrate-up": {
+      "executor": "@nrwl/workspace:run-commands",
+      "outputs": [],
+      "options": {
+        "command": "../../node_modules/.bin/prisma migrate dev --preview-feature --schema ./prisma/schema.prisma",
+        "cwd": "apps/customer-api"
+      }
+    },
+    "migrate-reset": {
+      "executor": "@nrwl/workspace:run-commands",
+      "outputs": [],
+      "options": {
+        "command": "../../node_modules/.bin/prisma migrate reset --preview-feature --schema ./prisma/schema.prisma",
+        "cwd": "apps/customer-api"
+      }
+    },
+    "migrate-deploy": {
+      "executor": "@nrwl/workspace:run-commands",
+      "outputs": [],
+      "options": {
+        "command": "../../node_modules/.bin/prisma migrate deploy --preview-feature --schema ./prisma/schema.prisma",
+        "cwd": "apps/customer-api"
+      }
+    },
+    "migrate-status": {
+      "executor": "@nrwl/workspace:run-commands",
+      "outputs": [],
+      "options": {
+        "command": "../../node_modules/.bin/prisma migrate status --preview-feature --schema ./prisma/schema.prisma",
+        "cwd": "apps/customer-api"
+      }
+    },
+    "studio": {
+      "executor": "@nrwl/workspace:run-commands",
+      "outputs": [],
+      "options": {
+        "command": "../../node_modules/.bin/prisma studio --schema ./prisma/schema.prisma",
+        "cwd": "apps/customer-api"
+      }
     }
   },
   "tags": []

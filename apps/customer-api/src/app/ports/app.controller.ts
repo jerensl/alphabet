@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 
-import { AppService } from './app.service';
-import { MessageDTO } from './domain/Message';
+import { AppService } from '../adapters/app.service';
+import { MessageDTO } from '../domain/Message';
 
 @Controller('message')
 export class AppController {
