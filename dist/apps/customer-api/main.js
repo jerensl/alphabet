@@ -18,7 +18,7 @@ let AppController = class AppController {
         this.appService = appService;
     }
     message(message) {
-        return this.appService.pushNewMessage(message);
+        return this.appService.pushNewMessage(message.message);
     }
     getMessage() {
         return this.appService.getAllMessage();
@@ -28,7 +28,7 @@ tslib_1.__decorate([
     (0, common_1.Post)(),
     tslib_1.__param(0, (0, common_1.Body)()),
     tslib_1.__metadata("design:type", Function),
-    tslib_1.__metadata("design:paramtypes", [typeof (_a = typeof Message_1.Messaging !== "undefined" && Message_1.Messaging) === "function" ? _a : Object]),
+    tslib_1.__metadata("design:paramtypes", [typeof (_a = typeof Message_1.MessageDTO !== "undefined" && Message_1.MessageDTO) === "function" ? _a : Object]),
     tslib_1.__metadata("design:returntype", void 0)
 ], AppController.prototype, "message", null);
 tslib_1.__decorate([
@@ -103,7 +103,7 @@ let AppService = class AppService {
                 vocabFile: './vocabulary.txt',
             });
             const encode = (0, util_1.promisify)(tokenizer.encode.bind(tokenizer));
-            const token = yield encode(message.message);
+            const token = yield encode(message);
             const attention_mask = token.getAttentionMask();
             const input_ids = token.getIds();
             const data = {
@@ -138,7 +138,7 @@ let AppService = class AppService {
                 category = 'normal';
             }
             this.messaging.push({
-                message: message.category,
+                message: category,
                 prediction: responseData.predictions,
                 category: category,
             });
@@ -155,10 +155,20 @@ exports.AppService = AppService;
 /***/ }),
 
 /***/ "./apps/customer-api/src/app/domain/Message.ts":
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.MessageDTO = void 0;
+const tslib_1 = __webpack_require__("tslib");
+const class_validator_1 = __webpack_require__("class-validator");
+class MessageDTO {
+}
+tslib_1.__decorate([
+    (0, class_validator_1.IsNotEmpty)(),
+    tslib_1.__metadata("design:type", String)
+], MessageDTO.prototype, "message", void 0);
+exports.MessageDTO = MessageDTO;
 
 
 /***/ }),
@@ -188,6 +198,13 @@ module.exports = require("@nestjs/core");
 /***/ ((module) => {
 
 module.exports = require("@nestjs/platform-fastify");
+
+/***/ }),
+
+/***/ "class-validator":
+/***/ ((module) => {
+
+module.exports = require("class-validator");
 
 /***/ }),
 
@@ -262,6 +279,7 @@ function bootstrap() {
         const app = yield core_1.NestFactory.create(app_module_1.AppModule, new platform_fastify_1.FastifyAdapter({
             logger: true,
         }));
+        app.useGlobalPipes(new common_1.ValidationPipe());
         const globalPrefix = 'api';
         app.setGlobalPrefix(globalPrefix);
         const port = process.env.PORT || 3333;

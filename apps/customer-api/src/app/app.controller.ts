@@ -1,15 +1,15 @@
-import { Body, Controller, Get, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 
 import { AppService } from './app.service';
-import { Messaging } from './domain/Message';
+import { MessageDTO } from './domain/Message';
 
 @Controller('message')
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Post()
-  message(@Body() message: Messaging) {
-    return this.appService.pushNewMessage(message);
+  message(@Body() message: MessageDTO) {
+    return this.appService.pushNewMessage(message.message);
   }
 
   @Get()

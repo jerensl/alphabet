@@ -15,14 +15,14 @@ export class AppService {
     return this.messaging;
   }
 
-  async pushNewMessage(message: Messaging) {
+  async pushNewMessage(message: string) {
     const tokenizer = await BertWordPieceTokenizer.fromOptions({
       vocabFile: './vocabulary.txt',
     });
 
     const encode = promisify(tokenizer.encode.bind(tokenizer));
 
-    const token = await encode(message.message);
+    const token = await encode(message);
 
     const attention_mask = token.getAttentionMask();
     const input_ids = token.getIds();
@@ -41,18 +41,11 @@ export class AppService {
       input_ids.push(0);
     }
 
-    this.logger.log('Json Data :', JSON.stringify(data));
-
     const responseData = await lastValueFrom(
       this.httpService
         .post(`http://${process.env.SENTIMENT_MODEL_URL}`, JSON.stringify(data))
         .pipe(
           map((response) => {
-            this.logger.log(
-              'Response status from tensorflow serving :',
-              response.data
-            );
-
             return response.data;
           })
         )
@@ -73,7 +66,7 @@ export class AppService {
     }
 
     this.messaging.push({
-      message: message.category,
+      message: category,
       prediction: responseData.predictions,
       category: category,
     });
