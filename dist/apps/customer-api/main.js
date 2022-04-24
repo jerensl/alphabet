@@ -24,15 +24,19 @@ let AppService = class AppService {
     getAllMessage() {
         return this.messaging;
     }
-    pushNewMessage(message) {
+    encoded(message) {
         return tslib_1.__awaiter(this, void 0, void 0, function* () {
             const tokenizer = yield tokenizers_1.BertWordPieceTokenizer.fromOptions({
                 vocabFile: './vocabulary.txt',
             });
             const encode = (0, util_1.promisify)(tokenizer.encode.bind(tokenizer));
             const token = yield encode(message);
-            const attention_mask = token.getAttentionMask();
             const input_ids = token.getIds();
+            const attention_mask = token.getAttentionMask();
+            while (input_ids.length < 256) {
+                attention_mask.push(0);
+                input_ids.push(0);
+            }
             const data = {
                 instances: [
                     {
@@ -41,32 +45,35 @@ let AppService = class AppService {
                     },
                 ],
             };
-            while (attention_mask.length < 256) {
-                attention_mask.push(0);
-                input_ids.push(0);
-            }
+            return data;
+        });
+    }
+    prediction(dataEncoded) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
             const responseData = yield (0, rxjs_1.lastValueFrom)(this.httpService
-                .post(`http://${process.env.SENTIMENT_MODEL_URL}`, JSON.stringify(data))
+                .post(`http://${process.env.SENTIMENT_MODEL_URL}`, JSON.stringify(dataEncoded))
                 .pipe((0, rxjs_1.map)((response) => {
                 return response.data;
             })));
-            let category = '';
-            const max = Math.max(...responseData.predictions);
-            const index = yield responseData.predictions.indexOf(max);
-            if (index == 1) {
-                category = 'hate speech';
-            }
-            else if (index === 2) {
-                category = 'abusive';
-            }
-            else {
-                category = 'normal';
-            }
-            this.messaging.push({
-                message: message,
-                prediction: responseData.predictions,
-                category: category,
-            });
+            return responseData;
+        });
+    }
+    getCategory(prediction) {
+        const max = Math.max(...prediction);
+        const index = prediction.indexOf(max);
+        if (index === 1) {
+            return 'hate speech';
+        }
+        else if (index === 2) {
+            return 'abusive';
+        }
+        return 'normal';
+    }
+    addData(message, category, prediction) {
+        this.messaging.push({
+            message: message,
+            prediction: prediction,
+            category: category,
         });
     }
 };
@@ -143,7 +150,12 @@ let AppController = class AppController {
         this.appService = appService;
     }
     message(message) {
-        return this.appService.pushNewMessage(message.message);
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const dataEncoded = yield this.appService.encoded(message.message);
+            const dataPrediction = yield this.appService.prediction(dataEncoded);
+            const category = this.appService.getCategory(dataPrediction.predictions);
+            this.appService.addData(message.message, category, dataPrediction.predictions);
+        });
     }
     getMessage() {
         return this.appService.getAllMessage();
@@ -154,7 +166,7 @@ tslib_1.__decorate([
     tslib_1.__param(0, (0, common_1.Body)()),
     tslib_1.__metadata("design:type", Function),
     tslib_1.__metadata("design:paramtypes", [typeof (_a = typeof Message_1.MessageDTO !== "undefined" && Message_1.MessageDTO) === "function" ? _a : Object]),
-    tslib_1.__metadata("design:returntype", void 0)
+    tslib_1.__metadata("design:returntype", Promise)
 ], AppController.prototype, "message", null);
 tslib_1.__decorate([
     (0, common_1.Get)(),

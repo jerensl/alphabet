@@ -8,8 +8,15 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Post()
-  message(@Body() message: MessageDTO) {
-    return this.appService.pushNewMessage(message.message);
+  async message(@Body() message: MessageDTO) {
+    const dataEncoded = await this.appService.encoded(message.message);
+    const dataPrediction = await this.appService.prediction(dataEncoded);
+    const category = this.appService.getCategory(dataPrediction.predictions);
+    this.appService.addData(
+      message.message,
+      category,
+      dataPrediction.predictions
+    );
   }
 
   @Get()

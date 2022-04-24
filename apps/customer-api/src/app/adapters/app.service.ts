@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { BertWordPieceTokenizer } from 'tokenizers';
-import { Messaging } from '../domain/Message';
+import { Messaging, MessageEncoding, Predictions } from '../domain/Message';
 import { promisify } from 'util';
 import { lastValueFrom, map } from 'rxjs';
 
@@ -15,7 +15,7 @@ export class AppService {
     return this.messaging;
   }
 
-  async pushNewMessage(message: string) {
+  async encoded(message: string): Promise<MessageEncoding> {
     const tokenizer = await BertWordPieceTokenizer.fromOptions({
       vocabFile: './vocabulary.txt',
     });
@@ -24,8 +24,13 @@ export class AppService {
 
     const token = await encode(message);
 
-    const attention_mask = token.getAttentionMask();
     const input_ids = token.getIds();
+    const attention_mask = token.getAttentionMask();
+
+    while (input_ids.length < 256) {
+      attention_mask.push(0);
+      input_ids.push(0);
+    }
 
     const data = {
       instances: [
@@ -36,14 +41,16 @@ export class AppService {
       ],
     };
 
-    while (attention_mask.length < 256) {
-      attention_mask.push(0);
-      input_ids.push(0);
-    }
+    return data;
+  }
 
+  async prediction(dataEncoded: MessageEncoding): Promise<Predictions> {
     const responseData = await lastValueFrom(
       this.httpService
-        .post(`http://${process.env.SENTIMENT_MODEL_URL}`, JSON.stringify(data))
+        .post(
+          `http://${process.env.SENTIMENT_MODEL_URL}`,
+          JSON.stringify(dataEncoded)
+        )
         .pipe(
           map((response) => {
             return response.data;
@@ -51,23 +58,27 @@ export class AppService {
         )
     );
 
-    let category = '';
+    return responseData;
+  }
 
-    const max = Math.max(...responseData.predictions);
+  getCategory(prediction: Array<number>): string {
+    const max = Math.max(...prediction);
 
-    const index = await responseData.predictions.indexOf(max);
+    const index = prediction.indexOf(max);
 
-    if (index == 1) {
-      category = 'hate speech';
+    if (index === 1) {
+      return 'hate speech';
     } else if (index === 2) {
-      category = 'abusive';
-    } else {
-      category = 'normal';
+      return 'abusive';
     }
 
+    return 'normal';
+  }
+
+  addData(message: string, category: string, prediction: Array<number>) {
     this.messaging.push({
       message: message,
-      prediction: responseData.predictions,
+      prediction: prediction,
       category: category,
     });
   }
