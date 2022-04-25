@@ -15,3 +15,8 @@ Run `yarn add -D @nrwl/nest` to add a plugin using yarn.
 
 Run `nx g @nrwl/nest:app my-nest-app` to generate an application.  
 Run `yarn nx g @nrwl/nest:app my-nest-app` to generate an application using yarn.
+
+## Build and add ML Model to tensorflow/serving image
+
+Run `chmod +x scripts/build-ml.sh` give a permission using linux command.  
+Run `scripts/build-ml.sh` execute the script using linux command.

@@ -1,12 +1,12 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { BertWordPieceTokenizer } from 'tokenizers';
-import { Messaging, MessageEncoding, Predictions } from '../domain/Message';
+import { Messaging, MessageEncoding, Predictions } from './message.entity';
 import { promisify } from 'util';
 import { lastValueFrom, map } from 'rxjs';
 
 @Injectable()
-export class AppService {
+export class MessageService {
   private readonly messaging: Messaging[] = [];
   constructor(private httpService: HttpService) {}
   private readonly logger = new Logger();
@@ -47,10 +47,7 @@ export class AppService {
   async prediction(dataEncoded: MessageEncoding): Promise<Predictions> {
     const responseData = await lastValueFrom(
       this.httpService
-        .post(
-          `http://${process.env.SENTIMENT_MODEL_URL}`,
-          JSON.stringify(dataEncoded)
-        )
+        .post(process.env.SENTIMENT_MODEL_URL, JSON.stringify(dataEncoded))
         .pipe(
           map((response) => {
             return response.data;
