@@ -1,18 +1,30 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { BertWordPieceTokenizer } from 'tokenizers';
-import { Messaging, MessageEncoding, Predictions } from './message.entity';
+import { MessageEncoding, Predictions } from './message.entity';
 import { promisify } from 'util';
 import { lastValueFrom, map } from 'rxjs';
+import { PrismaService } from '../database/prisma.service';
+import { Message, Prisma } from '@prisma/client';
 
 @Injectable()
 export class MessageService {
-  private readonly messaging: Messaging[] = [];
-  constructor(private httpService: HttpService) {}
-  private readonly logger = new Logger();
+  constructor(
+    private httpService: HttpService,
+    private prisma: PrismaService
+  ) {}
 
-  getAllMessage(): Messaging[] {
-    return this.messaging;
+  async getAllMessage(): Promise<Message[] | null> {
+    return this.prisma.message.findMany({});
+  }
+
+  async getMessageByID(params: {
+    where: Prisma.MessageWhereInput;
+  }): Promise<Message[] | null> {
+    const { where } = params;
+    return this.prisma.message.findMany({
+      where,
+    });
   }
 
   async encoded(message: string): Promise<MessageEncoding> {
@@ -72,11 +84,12 @@ export class MessageService {
     return 'normal';
   }
 
-  addData(message: string, category: string, prediction: Array<number>) {
-    this.messaging.push({
-      message: message,
-      prediction: prediction,
-      category: category,
+  async addMessage(params: {
+    data: Prisma.MessageCreateInput;
+  }): Promise<Message> {
+    const { data } = params;
+    return this.prisma.message.create({
+      data,
     });
   }
 }

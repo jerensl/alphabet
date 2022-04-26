@@ -16,10 +16,13 @@ export interface MessageEncoding {
 }
 
 export interface Predictions {
-  predictions: Array<number>;
+  predictions: Array<Array<number>>;
 }
 
 export class MessageDTO {
+  @IsNotEmpty()
+  user_id: string;
+
   @IsNotEmpty()
   message: string;
 }

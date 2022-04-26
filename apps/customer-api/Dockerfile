@@ -6,7 +6,9 @@ WORKDIR /app/
 
 # install and cache app dependencies
 COPY package.json yarn.lock ./
+COPY prisma ./prisma/
 RUN yarn install --production
+RUN yarn push
 
 # add app
 COPY dist/apps/customer-api/ ./

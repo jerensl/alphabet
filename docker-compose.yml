@@ -16,8 +16,8 @@ services:
     ports:
       - '127.0.0.1:8501:8501'
     environment:
-      - MODEL_NAME=sentiment-analysis
+      - MODEL_NAME=bert
     volumes:
       - type: bind
         source: ${PWD}/apps/sentiment-model/
-        target: /models/sentiment-analysis
+        target: /models/bert

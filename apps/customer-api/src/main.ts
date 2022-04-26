@@ -5,7 +5,7 @@ import {
 
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-
+import { PrismaService } from './database/prisma.service';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -15,6 +15,9 @@ async function bootstrap() {
       logger: true,
     })
   );
+
+  const prismaService = app.get(PrismaService);
+  await prismaService.enableShutdownHooks(app);
 
   app.useGlobalPipes(new ValidationPipe());
   const globalPrefix = 'api';
